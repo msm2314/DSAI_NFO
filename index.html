@@ -1,0 +1,471 @@
+
+
+Dsa tracker · HTML
+Copied
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SP/DSE Logbook</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap');
+ 
+  :root{
+    --bg:#0d1210;
+    --bg-raised:#131a17;
+    --bg-card:#161f1b;
+    --line:#25322c;
+    --line-soft:#1c2620;
+    --ink:#d9e4dd;
+    --ink-dim:#84958c;
+    --ink-faint:#4d5c54;
+    --accent:#5ffb9b;
+    --accent-dim:#2f7a52;
+    --amber:#f5b859;
+    --red:#ef6d6d;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Inter', sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-attachment: fixed;
+  }
+  #app{max-width:1180px;margin:0 auto;padding:28px 20px 80px;}
+ 
+  /* HEADER */
+  .hero{border:1px solid var(--line);background:linear-gradient(180deg,var(--bg-raised),var(--bg));
+    border-radius:10px;padding:22px 24px;margin-bottom:18px;position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent);}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;}
+  .h1{font-family:var(--mono);font-size:26px;font-weight:800;margin:6px 0 4px;color:#eef5f0;}
+  .sub{color:var(--ink-dim);font-size:13.5px;max-width:640px;line-height:1.5;}
+  .stat-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;}
+  .stat{border:1px solid var(--line);background:var(--bg-card);border-radius:8px;padding:10px 14px;min-width:104px;}
+  .stat .n{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--accent);}
+  .stat .l{font-size:10.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
+ 
+  /* LAYOUT */
+  .grid{display:grid;grid-template-columns:250px 1fr;gap:16px;}
+  @media(max-width:840px){.grid{grid-template-columns:1fr;}}
+ 
+  /* SIDEBAR LOG */
+  .log{border:1px solid var(--line);background:var(--bg-card);border-radius:10px;padding:8px;max-height:74vh;overflow-y:auto;}
+  .log-item{display:flex;align-items:center;gap:9px;padding:9px 8px;border-radius:6px;cursor:pointer;border:1px solid transparent;margin-bottom:2px;}
+  .log-item:hover{background:var(--bg-raised);}
+  .log-item.active{background:var(--bg-raised);border-color:var(--accent-dim);}
+  .log-item.today{box-shadow:inset 3px 0 0 var(--amber);}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;background:var(--line);border:1px solid var(--ink-faint);}
+  .dot.done{background:var(--accent);border-color:var(--accent);}
+  .dot.partial{background:var(--amber);border-color:var(--amber);}
+  .log-meta{flex:1;min-width:0;}
+  .log-day{font-family:var(--mono);font-size:11.5px;color:var(--ink);}
+  .log-date{font-size:10px;color:var(--ink-faint);}
+  .log-phase{font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;}
+ 
+  /* MAIN PANEL */
+  .panel{border:1px solid var(--line);background:var(--bg-card);border-radius:10px;padding:22px;}
+  .panel-head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--line);padding-bottom:14px;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .panel-title{font-family:var(--mono);font-size:19px;font-weight:700;color:#eef5f0;}
+  .panel-sub{font-size:12px;color:var(--ink-dim);margin-top:3px;}
+  .badge{font-family:var(--mono);font-size:10.5px;padding:3px 9px;border-radius:20px;border:1px solid var(--accent-dim);color:var(--accent);text-transform:uppercase;letter-spacing:.05em;}
+ 
+  .section-label{font-family:var(--mono);font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.1em;margin:18px 0 8px;}
+  .section-label:first-of-type{margin-top:0;}
+ 
+  .theory-row{display:flex;align-items:center;gap:10px;background:var(--bg-raised);border:1px solid var(--line);border-radius:8px;padding:11px 13px;}
+  .theory-row label{font-size:13px;color:var(--ink);cursor:pointer;flex:1;}
+  .theory-row .mins{font-family:var(--mono);font-size:11px;color:var(--ink-faint);}
+ 
+  .problem{border:1px solid var(--line);border-radius:8px;margin-bottom:8px;background:var(--bg-raised);overflow:hidden;}
+  .problem-top{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;}
+  .problem-name{flex:1;font-size:13.5px;}
+  .problem-idx{font-family:var(--mono);color:var(--ink-faint);font-size:11px;width:16px;}
+  select.status{font-family:var(--sans);font-size:11.5px;background:var(--bg-card);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 7px;}
+  select.status[data-v="solved-easy"]{color:var(--accent);border-color:var(--accent-dim);}
+  select.status[data-v="solved-hard"]{color:var(--amber);border-color:var(--amber);}
+  select.status[data-v="hint"]{color:var(--red);border-color:var(--red);}
+  .caret{color:var(--ink-faint);font-size:10px;width:10px;transition:transform .15s;}
+  .problem.open .caret{transform:rotate(90deg);}
+  .problem-notes{display:none;padding:0 13px 13px;border-top:1px solid var(--line);}
+  .problem.open .problem-notes{display:block;padding-top:11px;}
+  .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .notes-grid textarea, .full-w textarea{width:100%;background:var(--bg-card);border:1px solid var(--line);border-radius:6px;color:var(--ink);font-family:var(--sans);font-size:12px;padding:7px 9px;resize:vertical;min-height:38px;}
+  .field-label{font-size:10px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;display:block;}
+ 
+  .revision-list{display:flex;flex-wrap:wrap;gap:8px;}
+  .rev-chip{display:flex;align-items:center;gap:6px;background:var(--bg-raised);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:12px;cursor:pointer;}
+  .rev-chip.checked{border-color:var(--accent-dim);color:var(--accent);}
+ 
+  .conf-row{display:flex;align-items:center;gap:12px;}
+  input[type=range]{flex:1;accent-color:var(--accent);}
+  .conf-val{font-family:var(--mono);width:26px;text-align:center;color:var(--accent);font-weight:700;}
+ 
+  textarea.mistakes{width:100%;min-height:56px;}
+ 
+  .save-line{margin-top:18px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+  .save-note{font-size:11px;color:var(--ink-faint);font-family:var(--mono);}
+  .nav-btns{display:flex;gap:8px;}
+  .nav-btns button{font-family:var(--mono);font-size:12px;background:var(--bg-raised);border:1px solid var(--line);color:var(--ink);padding:7px 13px;border-radius:6px;cursor:pointer;}
+  .nav-btns button:hover{border-color:var(--accent-dim);color:var(--accent);}
+ 
+  input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
+  ::-webkit-scrollbar{width:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+ 
+<script>
+const START_DATE = new Date(2026,6,24); // 24 Jul 2026
+const TODAY = new Date(2026,6,24);      // fixed "today" per conversation context
+const STORAGE_KEY = 'dsa-tracker-records';
+ 
+function dateStr(offset){
+  const d = new Date(START_DATE); d.setDate(d.getDate()+offset);
+  return d.toISOString().slice(0,10);
+}
+function fmtDate(offset){
+  const d = new Date(START_DATE); d.setDate(d.getDate()+offset);
+  return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'});
+}
+function isSunday(offset){
+  const d = new Date(START_DATE); d.setDate(d.getDate()+offset);
+  return d.getDay()===0;
+}
+ 
+const DAYS = [
+ {phase:'Arrays', type:'study', problems:['Remove Duplicates from Sorted Array','Remove Element','Move Zeroes','Best Time to Buy and Sell Stock','Maximum Subarray'], revision:[], mins:45},
+ {phase:'Arrays', type:'study', problems:['Majority Element','Rotate Array','Missing Number','Third Maximum Number','Maximum Product of Three Numbers'], revision:['Remove Duplicates','Move Zeroes'], mins:45},
+ {phase:'Strings', type:'study', problems:['Reverse String','Reverse Words in a String','Valid Palindrome','Longest Common Prefix','Valid Anagram'], revision:["Yesterday's 5 (Arrays)"], mins:45},
+ {phase:'Strings', type:'study', problems:['Isomorphic Strings','Reverse Vowels of a String','First Unique Character in a String','Detect Capital','Buddy Strings'], revision:['Strings set'], mins:45},
+ {phase:'Arrays + Strings', type:'mixed', problems:['Mixed revision — pick 5 weak problems from Days 1-4'], revision:['Arrays','Strings'], mins:30},
+ {phase:'Arrays + Strings', type:'mock', problems:['Array + String mock test (timed)'], revision:[], mins:0},
+ {phase:'Week 1 Review', type:'sunday', problems:['Mock contest — 3 questions (timed)'], revision:["Full week 1 problem set"], mins:0},
+ 
+ {phase:'HashMap', type:'study', problems:['Two Sum','Contains Duplicate','Happy Number','Group Anagrams','Ransom Note'], revision:[], mins:60},
+ {phase:'HashMap', type:'study', problems:['Top K Frequent Elements','Word Pattern','Longest Consecutive Sequence','Find the Difference','Frequency Sort'], revision:['HashMap Day 1'], mins:60},
+ {phase:'Two Pointers', type:'study', problems:['Valid Palindrome II','Merge Sorted Array','Two Sum II','Sort Colors','Squares of a Sorted Array'], revision:['HashMap set'], mins:45},
+ {phase:'Two Pointers', type:'study', problems:['Container With Most Water','3Sum','Trapping Rain Water','Partition Labels','Boats to Save People'], revision:['Two Pointers Day 1'], mins:45},
+ {phase:'HashMap + Two Pointers', type:'mixed', problems:['Mixed revision — pick 5 weak problems from Days 8-11'], revision:['HashMap','Two Pointers'], mins:30},
+ {phase:'HashMap + Two Pointers', type:'mock', problems:['HashMap + Two Pointers mock test (timed)'], revision:[], mins:0},
+ {phase:'Week 2 Review', type:'sunday', problems:['Mock contest — 3 questions (timed)'], revision:['Full week 2 problem set'], mins:0},
+ 
+ {phase:'Sliding Window', type:'study', problems:['Maximum Average Subarray I','Maximum Number of Vowels in a Substring','Fruit Into Baskets','Longest Substring Without Repeating Characters','Minimum Size Subarray Sum'], revision:[], mins:60},
+ {phase:'Sliding Window', type:'study', problems:['Longest Repeating Character Replacement','Sliding Window Maximum','Permutation in String','Find All Anagrams in a String','Subarrays with K Different Integers'], revision:['Sliding Window Day 1'], mins:60},
+ {phase:'Binary Search', type:'study', problems:['Binary Search','Search Insert Position','Find Peak Element','Search in Rotated Sorted Array','Find Minimum in Rotated Sorted Array'], revision:['Sliding Window set'], mins:60},
+ {phase:'Binary Search', type:'study', problems:['Koko Eating Bananas','Capacity to Ship Packages Within D Days','Search a 2D Matrix','Split Array Largest Sum','Guess Number Higher or Lower'], revision:['Binary Search Day 1'], mins:60},
+ {phase:'Sliding Window + Binary Search', type:'mixed', problems:['Mixed revision — pick 5 weak problems from Days 15-18'], revision:['Sliding Window','Binary Search'], mins:30},
+ {phase:'Sliding Window + Binary Search', type:'mock', problems:['Sliding Window + Binary Search mock test (timed)'], revision:[], mins:0},
+ {phase:'Week 3 Review', type:'sunday', problems:['Mock contest — 3 questions (timed)'], revision:['Full week 3 problem set'], mins:0},
+ 
+ {phase:'Linked List', type:'study', problems:['Reverse Linked List','Middle of the Linked List','Linked List Cycle','Merge Two Sorted Lists','Remove Nth Node From End of List'], revision:[], mins:45},
+ {phase:'Stack', type:'study', problems:['Valid Parentheses','Next Greater Element I','Daily Temperatures','Min Stack','Evaluate Reverse Polish Notation'], revision:['Linked List set'], mins:45},
+ {phase:'Queue', type:'study', problems:['Implement Queue using Stacks','Design Circular Queue','Number of Recent Calls'], revision:['Stack set'], mins:30},
+ {phase:'Heap', type:'study', problems:['Top K Frequent Elements (Heap)','Kth Largest Element in an Array','Merge k Sorted Lists','K Closest Points to Origin'], revision:['Queue set'], mins:60},
+ {phase:'Greedy', type:'study', problems:['Jump Game','Gas Station','Assign Cookies','Merge Intervals','Non-overlapping Intervals'], revision:['Heap set'], mins:60},
+ {phase:'Week 4 Wrap', type:'mixed', problems:['Mixed revision — pick 5 weak problems from Days 22-26'], revision:['Linked List','Stack','Queue','Heap','Greedy'], mins:30},
+ {phase:'Week 4 Wrap', type:'mock', problems:['Full mixed mock test (timed)'], revision:[], mins:0},
+ {phase:'FINAL REVISION', type:'final', problems:['Morning: Arrays, Strings, HashMap — light review','Afternoon: Sliding Window, Binary Search — light review','Evening: Linked List, Stack — light review','Night: review pattern notebook only, sleep well'], revision:[], mins:0},
+];
+ 
+let records = {};
+let currentIdx = 0;
+let saveTimer = null;
+ 
+function blankRecord(){
+  return {theory:false, problems:{}, revision:{}, confidence:5, mistakes:''};
+}
+function getRecord(idx){
+  const key = dateStr(idx);
+  if(!records[key]) records[key] = blankRecord();
+  return records[key];
+}
+function dayProgress(idx){
+  const d = DAYS[idx], r = records[dateStr(idx)];
+  if(!r) return 0;
+  const total = d.problems.length + (d.theory!==undefined?0:0) + 1;
+  let done = 0;
+  d.problems.forEach((p,i)=>{ if(r.problems[i] && r.problems[i]!=='not-started') done++; });
+  if(r.theory) done++;
+  const denom = d.problems.length + 1;
+  return denom? done/denom : 0;
+}
+ 
+async function loadRecords(){
+  try{
+    const res = await window.storage.get(STORAGE_KEY, false);
+    if(res && res.value) records = JSON.parse(res.value);
+  }catch(e){ records = {}; }
+  render();
+}
+function scheduleSave(){
+  const noteEl = document.getElementById('saveNote');
+  if(noteEl) noteEl.textContent = 'saving…';
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    try{
+      await window.storage.set(STORAGE_KEY, JSON.stringify(records), false);
+      const n = document.getElementById('saveNote');
+      if(n) n.textContent = 'saved just now';
+    }catch(e){
+      const n = document.getElementById('saveNote');
+      if(n) n.textContent = 'save failed — will retry';
+    }
+  }, 500);
+}
+ 
+function overallStats(){
+  let solved=0, total=0, theoryDone=0;
+  DAYS.forEach((d,idx)=>{
+    const r = records[dateStr(idx)];
+    total += d.problems.length;
+    if(r){
+      d.problems.forEach((p,i)=>{ if(r.problems[i] && r.problems[i]!=='not-started') solved++; });
+      if(r.theory) theoryDone++;
+    }
+  });
+  const daysLeft = Math.max(0, DAYS.length-1 - (TODAY-START_DATE)/(1000*60*60*24));
+  return {solved, total, theoryDone, daysLeft: Math.round(daysLeft)};
+}
+ 
+function statusLabel(v){
+  return {'not-started':'Not started','solved-easy':'Solved — no help','solved-hard':'Solved — took a while','hint':'Needed a hint'}[v] || 'Not started';
+}
+ 
+function render(){
+  const app = document.getElementById('app');
+  const s = overallStats();
+  const d = DAYS[currentIdx];
+  const key = dateStr(currentIdx);
+  const rec = getRecord(currentIdx);
+ 
+  app.innerHTML = `
+    <div class="hero">
+      <div class="eyebrow">Infosys SP / DSE · Coding Round Bootcamp</div>
+      <div class="h1">29-Day Logbook</div>
+      <div class="sub">24 Jul → 21 Aug. One entry per day: theory, problems, revision, confidence. Everything you log here is saved automatically and stays put between visits.</div>
+      <div class="stat-row">
+        <div class="stat"><div class="n">${s.solved}/${s.total}</div><div class="l">Problems logged</div></div>
+        <div class="stat"><div class="n">${s.theoryDone}/${DAYS.length}</div><div class="l">Theory sessions</div></div>
+        <div class="stat"><div class="n">${s.daysLeft}</div><div class="l">Days to Aug 21</div></div>
+      </div>
+    </div>
+ 
+    <div class="grid">
+      <div class="log" id="log"></div>
+      <div class="panel" id="panel"></div>
+    </div>
+  `;
+ 
+  renderLog();
+  renderPanel(d, key, rec);
+}
+ 
+function renderLog(){
+  const log = document.getElementById('log');
+  log.innerHTML = DAYS.map((d,idx)=>{
+    const p = dayProgress(idx);
+    const dotClass = p>=0.99 ? 'done' : p>0 ? 'partial' : '';
+    const isToday = dateStr(idx)===dateStr(0) && idx===0 ? true : (idx === Math.round((TODAY-START_DATE)/(86400000)));
+    return `<div class="log-item ${idx===currentIdx?'active':''} ${isToday?'today':''}" data-idx="${idx}">
+      <div class="dot ${dotClass}"></div>
+      <div class="log-meta">
+        <div class="log-day">Day ${idx+1} · ${fmtDate(idx)}</div>
+        <div class="log-phase">${d.phase}${isSunday(idx)?' · Sun':''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  log.querySelectorAll('.log-item').forEach(el=>{
+    el.addEventListener('click', ()=>{ currentIdx = parseInt(el.dataset.idx); render(); });
+  });
+}
+ 
+function typeBadge(type){
+  return {study:'Study day', mixed:'Mixed revision', mock:'Mock test', sunday:'Sunday review', final:'Final revision'}[type] || 'Study day';
+}
+ 
+function renderPanel(d, key, rec){
+  const panel = document.getElementById('panel');
+ 
+  const theoryHtml = d.mins>0 ? `
+    <div class="section-label">Theory</div>
+    <div class="theory-row">
+      <input type="checkbox" id="theoryCk" ${rec.theory?'checked':''}>
+      <label for="theoryCk">Watched/read theory for <strong>${d.phase}</strong></label>
+      <span class="mins">${d.mins} min target</span>
+    </div>` : '';
+ 
+  const problemsHtml = `
+    <div class="section-label">${d.type==='mock'||d.type==='sunday' ? 'Task' : 'Problems'}</div>
+    ${d.problems.map((p,i)=>{
+      const st = rec.problems[i] || 'not-started';
+      const n = rec.notesFor && rec.notesFor[i] ? rec.notesFor[i] : {pattern:'',approach:'',mistake:'',clue:''};
+      return `<div class="problem" data-pi="${i}">
+        <div class="problem-top">
+          <div class="problem-idx">${String(i+1).padStart(2,'0')}</div>
+          <div class="problem-name">${p}</div>
+          <select class="status" data-v="${st}" data-pi="${i}">
+            <option value="not-started" ${st==='not-started'?'selected':''}>Not started</option>
+            <option value="solved-easy" ${st==='solved-easy'?'selected':''}>Solved — no help</option>
+            <option value="solved-hard" ${st==='solved-hard'?'selected':''}>Solved — took a while</option>
+            <option value="hint" ${st==='hint'?'selected':''}>Needed a hint</option>
+          </select>
+          <span class="caret">▶</span>
+        </div>
+        <div class="problem-notes">
+          <div class="notes-grid">
+            <div><span class="field-label">Pattern</span><textarea data-field="pattern" data-pi="${i}" placeholder="e.g. two pointers, prefix sum...">${n.pattern||''}</textarea></div>
+            <div><span class="field-label">Approach</span><textarea data-field="approach" data-pi="${i}" placeholder="brute force → optimal">${n.approach||''}</textarea></div>
+            <div><span class="field-label">Mistake I made</span><textarea data-field="mistake" data-pi="${i}" placeholder="what went wrong first">${n.mistake||''}</textarea></div>
+            <div><span class="field-label">Clue that hints the pattern</span><textarea data-field="clue" data-pi="${i}" placeholder="what in the question tipped it off">${n.clue||''}</textarea></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  `;
+ 
+  const revisionHtml = d.revision.length ? `
+    <div class="section-label">Revision</div>
+    <div class="revision-list">
+      ${d.revision.map((r,i)=>{
+        const checked = rec.revision[i];
+        return `<div class="rev-chip ${checked?'checked':''}" data-ri="${i}">
+          <input type="checkbox" ${checked?'checked':''} style="pointer-events:none;"> ${r}
+        </div>`;
+      }).join('')}
+    </div>` : '';
+ 
+  const confHtml = `
+    <div class="section-label">Confidence today</div>
+    <div class="conf-row">
+      <input type="range" id="confRange" min="1" max="10" value="${rec.confidence}">
+      <span class="conf-val" id="confVal">${rec.confidence}</span>
+    </div>
+  `;
+ 
+  const mistakesHtml = `
+    <div class="section-label">Notes for tomorrow</div>
+    <div class="full-w"><textarea class="mistakes" id="mistakesArea" placeholder="Anything to remember / fix tomorrow...">${rec.mistakes||''}</textarea></div>
+  `;
+ 
+  panel.innerHTML = `
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Day ${currentIdx+1} — ${d.phase}</div>
+        <div class="panel-sub">${fmtDate(currentIdx)}${isSunday(currentIdx)?' (Sunday)':''} · target ${d.mins} min theory + ${d.problems.filter(p=>d.type==='study').length ? d.problems.length+' problems' : d.type}</div>
+      </div>
+      <span class="badge">${typeBadge(d.type)}</span>
+    </div>
+    ${theoryHtml}
+    ${problemsHtml}
+    ${revisionHtml}
+    ${confHtml}
+    ${mistakesHtml}
+    <div class="save-line">
+      <span class="save-note" id="saveNote">all saved</span>
+      <div class="nav-btns">
+        <button id="prevBtn" ${currentIdx===0?'disabled':''}>← Prev day</button>
+        <button id="nextBtn" ${currentIdx===DAYS.length-1?'disabled':''}>Next day →</button>
+      </div>
+    </div>
+  `;
+ 
+  wirePanel(rec);
+}
+ 
+function wirePanel(rec){
+  const theoryCk = document.getElementById('theoryCk');
+  if(theoryCk){
+    theoryCk.addEventListener('change', ()=>{ rec.theory = theoryCk.checked; scheduleSave(); refreshLogDot(); });
+  }
+ 
+  document.querySelectorAll('.problem-top').forEach(top=>{
+    top.addEventListener('click', (e)=>{
+      if(e.target.tagName==='SELECT') return;
+      top.parentElement.classList.toggle('open');
+    });
+  });
+ 
+  document.querySelectorAll('select.status').forEach(sel=>{
+    sel.addEventListener('click', e=>e.stopPropagation());
+    sel.addEventListener('change', ()=>{
+      const pi = sel.dataset.pi;
+      rec.problems[pi] = sel.value;
+      sel.dataset.v = sel.value;
+      scheduleSave();
+      refreshLogDot();
+    });
+  });
+ 
+  document.querySelectorAll('.problem-notes textarea').forEach(ta=>{
+    ta.addEventListener('input', ()=>{
+      const pi = ta.dataset.pi, field = ta.dataset.field;
+      if(!rec.notesFor) rec.notesFor = {};
+      if(!rec.notesFor[pi]) rec.notesFor[pi] = {};
+      rec.notesFor[pi][field] = ta.value;
+      scheduleSave();
+    });
+  });
+ 
+  document.querySelectorAll('.rev-chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      const ri = chip.dataset.ri;
+      rec.revision[ri] = !rec.revision[ri];
+      chip.classList.toggle('checked');
+      chip.querySelector('input').checked = !!rec.revision[ri];
+      scheduleSave();
+    });
+  });
+ 
+  const confRange = document.getElementById('confRange');
+  if(confRange){
+    confRange.addEventListener('input', ()=>{
+      rec.confidence = parseInt(confRange.value);
+      document.getElementById('confVal').textContent = confRange.value;
+      scheduleSave();
+    });
+  }
+ 
+  const mistakesArea = document.getElementById('mistakesArea');
+  if(mistakesArea){
+    mistakesArea.addEventListener('input', ()=>{
+      rec.mistakes = mistakesArea.value;
+      scheduleSave();
+    });
+  }
+ 
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  if(prevBtn) prevBtn.addEventListener('click', ()=>{ if(currentIdx>0){ currentIdx--; render(); }});
+  if(nextBtn) nextBtn.addEventListener('click', ()=>{ if(currentIdx<DAYS.length-1){ currentIdx++; render(); }});
+}
+ 
+function refreshLogDot(){
+  const items = document.querySelectorAll('.log-item .dot');
+  DAYS.forEach((d,idx)=>{
+    const p = dayProgress(idx);
+    const dotEl = items[idx];
+    if(!dotEl) return;
+    dotEl.classList.remove('done','partial');
+    if(p>=0.99) dotEl.classList.add('done');
+    else if(p>0) dotEl.classList.add('partial');
+  });
+  // refresh header stats without full re-render (avoid losing focus)
+  const s = overallStats();
+  const statEls = document.querySelectorAll('.stat .n');
+  if(statEls[0]) statEls[0].textContent = `${s.solved}/${s.total}`;
+  if(statEls[1]) statEls[1].textContent = `${s.theoryDone}/${DAYS.length}`;
+}
+ 
+loadRecords();
+</script>
+</body>
+</html>
+ 
+
+
